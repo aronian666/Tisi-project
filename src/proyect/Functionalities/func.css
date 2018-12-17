@@ -1,0 +1,11 @@
+.unborder {
+    width: 99%;
+    margin-left: 1px;
+    padding: 15px;
+    border: none;
+}
+.unborder:focus {
+    border: none;
+    outline-offset: 0px;
+    outline-color: #fff;
+}

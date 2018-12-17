@@ -1,0 +1,63 @@
+.main {
+    background-color: #eceff1;
+    min-height: 100vh;
+}
+.proyect-header {
+    height: 448px;
+    background-color: #fff;
+    background-image: url('https://cdn2.hubspot.net/hubfs/3811310/Sliding%20Madness/MrT.svg');
+    background-repeat: no-repeat;
+    background-position: calc(80% + 8vmax);
+    background-size: 600px;
+
+}
+@media screen and (max-width: 1000px) {
+    .proyect-header {
+        background-position: 400px;
+    }
+}
+.proyect-title {
+    width: 456px;
+}
+@media screen and (max-width: 600px){
+    .proyect-title {
+        width: 100%;
+    }
+}
+.proyect-header > :first-child {
+    width: 90%;
+    margin: auto;
+}
+.proyect-header > :last-child {
+    width: 960px;
+    margin: auto;
+    max-width: 90%;
+    padding: 64px 0 52px 0;
+}
+.proyect-main {
+    width: 960px;
+    margin: auto;
+    max-width: 90%;
+    position: relative;
+    top: -100px;
+}
+
+.proyect {
+    width: 296px;
+    height: 204px;
+    border: 1px solid rgba(0, 0, 0, .087);
+    border-radius: 10px;
+    cursor: pointer;
+    margin: 0 12px 24px 12px;
+    background-color: #fff;
+    box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
+}
+.proyects > :first-child {
+    color: #039be5;
+    text-align: center;
+}
+
+.proyect:hover {
+    transform: scale(1.1, 1.1);
+    transition: 0.4s;
+}

@@ -1,0 +1,46 @@
+.login > div {
+    width: 50%;
+}
+
+.login > .info {
+    flex-direction: column;
+    background-color: #27a946;
+    font-size: 2.5vmax;
+    color: #fff;
+}
+.sign {
+    text-align: center;
+
+}
+.bold {
+    font-weight: bold;
+}
+.login-form {
+    width: 600px;
+}
+.sign-up {
+    width: 450px;
+    max-width: 90%;
+    margin: 4vmax auto;
+}
+
+.login-derecha {
+    padding: 2em 2em 0;
+}
+.signup {
+    width: 350px;
+}
+
+@media screen and (max-width: 800px) {
+    .login > div {
+        width: 100%;
+        height: auto;
+    }
+    .login > div:first-child {
+        display: none;
+    }
+    .login {
+        flex-wrap: wrap;
+        flex-direction: row;
+    }
+}

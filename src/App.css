@@ -1,3 +1,45 @@
+.container {
+  max-width: 90%;
+  width: 1000px;
+  margin: auto;
+}
+.flex {
+  display: flex;
+}
+.space-between {
+  justify-content: space-between;
+}
+.space-around {
+  justify-content: space-around;
+}
+.justify {
+  justify-content: center;
+}
+.aling {
+  align-items: center;
+}
+
+main {
+  height: 100vh;
+}
+.width {
+  width: 100%;
+}
+.height {
+  height: 100%;
+}
+.padding {
+  padding: 3em;
+}
+.margin {
+  margin: 1em;
+}
+.wrap {
+  flex-wrap: wrap;
+}
+.column {
+  flex-direction: column;
+}
 .App {
   text-align: center;
 }

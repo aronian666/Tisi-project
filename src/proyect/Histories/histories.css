@@ -1,0 +1,6 @@
+.unborder-condition {
+    border-color: #fff !important;
+}
+.unborder-condition:focus {
+    border-color: #85b7d9 !important;
+}
