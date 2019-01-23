@@ -123,6 +123,8 @@ class SignUp extends Component {
                 <Form onSubmit={this.props.signUp} error>
                     <Form.Input label='Nombre' placeholder='Nombre' name='displayName' value={this.props.displayName} onChange={this.props.handleChange}/>
                     <Form.Input type='email' label='Correo Electronico' value={this.props.email} placeholder='Correo Electronico' name='newemail' onChange={this.props.onChangeEmail}/>
+                    <Form.Input type='text' label='DNI' maxlength='8' placeholder='DNI'/>
+                    <Form.Input type='text' label='Especialidad' placeholder='Especialidad' />
                     {this.props.emailValidate && 
                         <Message 
                             error

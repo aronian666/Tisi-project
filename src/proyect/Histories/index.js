@@ -15,7 +15,7 @@ export default class Histories extends Component {
     render() {
         const panes = [
             { menuItem: 'Todas las historias', render: ()=> <Tab.Pane attached={false}><Historias handleSort={this.props.handleSort} proyect={this.props.proyect} data={this.props.data} column={this.props.column} direction={this.props.direction}/></Tab.Pane>},
-            { menuItem: 'Hitorias sin sprint', render: ()=> <Tab.Pane attached={false}>Historias de usuario en desarrollo</Tab.Pane>},
+            { menuItem: 'Mis Historias', render: ()=> <Tab.Pane attached={false}><Historias user={this.props.user} handleSort={this.props.handleSort} proyect={this.props.proyect} data={this.props.data} column={this.props.column} direction={this.props.direction}/></Tab.Pane>},
             { menuItem: 'Requerimientos sin asignar', render: ()=> <Tab.Pane attached={false}>Funcionaliadades sin asignar</Tab.Pane>},
         ]
         return(

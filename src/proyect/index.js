@@ -8,6 +8,8 @@ import './project.css'
 import Histories from './Histories'
 import Functionalities from './Functionalities'
 import Home from './Home'
+import Sprint from './Sprint'
+
 var ref_fun, ref_his
 var funcionalities, histories
 export default class Proyect extends Component {
@@ -17,25 +19,35 @@ export default class Proyect extends Component {
             fuc_rama: false,
             proyect: null,
             loading: true,
-            his_rama: false,
-            
+            his_rama: false,    
             column: null,
             data: [],
             direction: null,
         }
     } 
     componentDidMount(){
+        this.setState({user: this.getCookie('user')})
         let ref = firebase.database() 
         ref.ref(`proyects/${this.props.match.params.proyectId}`).once('value', snapshot => {
             let proyect = snapshot.val()
             ref.ref(`users/${proyect.members.owner}`).once('value', snapshot => {
                 let owner = snapshot.val()
-                owner.key = 'Product Owner'
+                try{
+                    owner.key = snapshot.key
+                }
+                catch(err){
+                    console.log('ocurrio un error')
+                }
                 proyect.members.owner = owner
             })
             ref.ref(`users/${proyect.members.scrum}`).once('value', snapshot => {
                 let scrum = snapshot.val()
-                scrum.key = 'Scrum Master'
+                try{
+                    scrum.key = snapshot.key
+                }
+                catch(err){
+                    console.log('ocurrio un error')
+                }
                 proyect.members.scrum = scrum
             })
             let team = Object.keys(proyect.members.team)
@@ -47,6 +59,9 @@ export default class Proyect extends Component {
             console.log(proyect)
             this.setState({proyect, loading: false})
         })
+        firebase.database().ref(`sprints/${this.props.match.params.proyectId}`).on('value', snapshot => {
+            this.setState({sprints: snapshot.val()})
+        })
     }
     getFunctionalities(){
         this.setState({fuc_rama: true})
@@ -54,9 +69,14 @@ export default class Proyect extends Component {
         ref_fun = firebase.database().ref(`functionalities/${this.props.match.params.proyectId}`)
         funcionalities = ref_fun.on('value', snapshot => {
             this.setState({funcionalities: []})
-            snapshot.forEach(snapshot => {
-                this.setState({funcionalities: this.state.funcionalities.concat(snapshot.val())})
-            })
+            var funcionalities = snapshot.val()
+            if(funcionalities){
+                funcionalities = Object.keys(funcionalities).map(i => {funcionalities[i].id = i; funcionalities[i].access = funcionalities[i].users !== undefined? funcionalities[i].users[this.state.user]: false; return funcionalities[i]})               
+            }
+            else{
+                funcionalities = []
+            }
+            this.setState({funcionalities})
         })
     }
     handleSort = clickedColumn => () => {
@@ -76,13 +96,33 @@ export default class Proyect extends Component {
             direction: direction === 'ascending' ? 'descending' : 'ascending',
         })
     }
+    getCookie(cname) {
+        var name = cname + "=";
+        var decodedCookie = decodeURIComponent(document.cookie);
+        var ca = decodedCookie.split(';');
+        for(var i = 0; i <ca.length; i++) {
+            var c = ca[i];
+            while (c.charAt(0) === ' ') {
+                c = c.substring(1);
+            }
+            if (c.indexOf(name) === 0) {
+                return c.substring(name.length, c.length);
+            }
+        }
+        return null;
+    }
     getHistories() {
         this.setState({his_rama: true})
         
-        ref_his = firebase.database().ref(`histories/${this.props.match.params.proyectId}`).orderByChild('priority')
+        ref_his = firebase.database().ref(`functionalities/${this.props.match.params.proyectId}`).orderByChild('priority')
         histories = ref_his.on('value', snapshot => {
             var data = snapshot.val() || {}
-            this.setState({data: Object.keys(data).map(i=>{data[i].key = i; return (data[i])}), column: null, direction: null})
+            this.setState({data: Object.keys(data).map(i=>{
+                data[i].key = i;
+                console.log(data[i])
+                data[i].state = (data[i].state)? data[i].state: false 
+                data[i].time = (data[i].time)? ((data[i].time.pesimista + 4 * data[i].time.normal + data[i].time.optimista) / 6).toFixed(2) : 'No definido';
+                return (data[i])}), column: null, direction: null})
         })
     }
     componentWillUnmount(){
@@ -97,12 +137,14 @@ export default class Proyect extends Component {
     render(){
         const match = this.props.match
         const { activeItem } = this.state || {}
+        let sprints = this.state.sprints===undefined ||this.state.sprints===null? {} : this.state.sprints  
+        sprints = Object.keys(sprints).map(i => sprints[i])
         return(
             <div>
                 <Sidebar.Pushable>
                     <Sidebar size='large' animation='overlay' as={Menu} inverted vertical visible={true}>
                         <Menu.Item>
-                            <Menu.Header>Product Backlog</Menu.Header>
+                            <Menu.Header as={Link} to={'/'} style={{cursor: 'pointer'}}>Product Backlog</Menu.Header>
                             <Menu.Menu>
                                 <Menu.Item
                                     as={Link}
@@ -111,7 +153,7 @@ export default class Proyect extends Component {
                                     active={activeItem === 'Funcionalidades'}
                                     onClick={this.handleItemClick}
                                     icon='file outline'
-                                    className='raton'
+                                    
                                 />
                                 <Menu.Item
                                     as={Link}
@@ -119,7 +161,6 @@ export default class Proyect extends Component {
                                     name='Historias de usuario'
                                     active={activeItem === 'Historias de usuario'}
                                     onClick={this.handleItemClick}
-                                    className='raton'
                                     icon='users'
                                 />
                             </Menu.Menu>
@@ -127,57 +168,18 @@ export default class Proyect extends Component {
                         <Menu.Item>
                             <Menu.Header>Sprints</Menu.Header>
                             <Menu.Menu>
-                                <Menu.Item
-                                    name='Sprint 1'
-                                    active={activeItem === 'Sprint 1'}
-                                    onClick={this.handleItemClick}
-                                    className='raton'
-                                />
-                                <Menu.Item
-                                    name='Sprint 2'
-                                    active={activeItem === 'Sprint 2'}
-                                    onClick={this.handleItemClick}
-                                    className='raton'
-                                />
-                                <Menu.Item 
-                                    name='Sprint 3' 
-                                    active={activeItem === 'Sprint 3'} 
-                                    onClick={this.handleItemClick}
-                                    className='raton'
-                                />
+                                {sprints.map((sprint, key) => (
+                                    <Menu.Item
+                                        as={Link}
+                                        to={`${match.url}/sprint/${sprint.key}`}
+                                        name={`Sprint ${key+1}`}
+                                        active={activeItem === `Sprint ${key+1}`}
+                                        onClick={this.handleItemClick}
+                                    />
+                                ))}
                             </Menu.Menu>
                         </Menu.Item>
 
-                        <Menu.Item>
-                        <Menu.Header>Hosting</Menu.Header>
-
-                        <Menu.Menu>
-                            <Menu.Item
-                            name='shared'
-                            active={activeItem === 'shared'}
-                            onClick={this.handleItemClick}
-                            />
-                            <Menu.Item
-                            name='dedicated'
-                            active={activeItem === 'dedicated'}
-                            onClick={this.handleItemClick}
-                            />
-                        </Menu.Menu>
-                        </Menu.Item>
-
-                        <Menu.Item>
-                        <Menu.Header>Support</Menu.Header>
-
-                        <Menu.Menu>
-                            <Menu.Item name='email' active={activeItem === 'email'} onClick={this.handleItemClick}>
-                            E-mail Support
-                            </Menu.Item>
-
-                            <Menu.Item name='faq' active={activeItem === 'faq'} onClick={this.handleItemClick}>
-                            FAQs
-                            </Menu.Item>
-                        </Menu.Menu>
-                        </Menu.Item>
                     
                     </Sidebar>
                     <Sidebar.Pusher>
@@ -188,10 +190,11 @@ export default class Proyect extends Component {
                                 render={() => <Home proyect={this.state.proyect}/>}
                             />
                             <Route path={`${match.url}/functionalities`} render={()=>(
-                                <Functionalities getFuncionalities={this.getFunctionalities.bind(this)} rama={this.state.fuc_rama} funcionalities={this.state.funcionalities} proyect={match.params.proyectId}/>
+                                <Functionalities getFuncionalities={this.getFunctionalities.bind(this)} team={this.state.proyect} user={this.state.user} rama={this.state.fuc_rama} funcionalities={this.state.funcionalities} proyect={match.params.proyectId}/>
                             )}/>
                             <Route path={`${match.url}/user-histories`} render={()=>(
-                                <Histories 
+                                <Histories
+                                    user={this.state.user}
                                     getHistories={this.getHistories.bind(this)} 
                                     rama={this.state.his_rama}      
                                     proyect={match.params.proyectId}
@@ -199,6 +202,9 @@ export default class Proyect extends Component {
                                     data={this.state.data}
                                     column={this.state.column}
                                     direction={this.state.direction}/>
+                            )}/>
+                            <Route path={`${match.url}/sprint/:id`} render={({match}) => (
+                                <Sprint />
                             )}/>
                         </div>
                     </Sidebar.Pusher>

@@ -30,16 +30,13 @@ export default class Home extends Component {
                                 <Card.Description>System enginer</Card.Description>
                                 </Card.Content>
                                 <Card.Content extra>
-                                <a>
-                                    <Icon name='user' />
-                                    22 Ps
-                                </a>
+                                    22 Proyectos
                                 </Card.Content>
                             </Card>
                         ))}
                     </Card.Group>
                     <Header as='h3' icon textAlign='center'>
-                        <Icon name='users ' />
+                        <Icon name='users' />
                         <Header.Content>Team Scrum</Header.Content>
                     </Header>
                     <Card.Group centered>
@@ -54,10 +51,7 @@ export default class Home extends Component {
                                 <Card.Description>System enginer</Card.Description>
                                 </Card.Content>
                                 <Card.Content extra>
-                                <a>
-                                    <Icon name='user' />
-                                    22 Ps
-                                </a>
+                                    10 Proyectos
                                 </Card.Content>
                             </Card>
                         ))}

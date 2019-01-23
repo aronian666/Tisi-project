@@ -1,9 +1,9 @@
 import React, { Component } from 'react'
 import _ from 'lodash'
-import { Header, Icon, Table, Button, Modal, Form, TextArea, Grid, Segment, Label, Dimmer, Loader } from 'semantic-ui-react';
+import { Table, Button,Checkbox } from 'semantic-ui-react';
 import firebase from 'firebase/app'
 import 'firebase/database'
-var ref
+var ref, ref_s
 export default class Historias extends Component {
     state = {
         open: false,
@@ -15,9 +15,15 @@ export default class Historias extends Component {
         direction: null,
     }
     componentDidMount() {
-        ref = firebase.database().ref(`histories/${this.props.proyect}`)
+        ref = firebase.database().ref(`functionalities/${this.props.proyect}`)
+        ref_s = firebase.database().ref(`sprints/${this.props.proyect}`)
     }
     open = () => this.setState(() => ({open: !this.state.open}))
+    addState(key){
+        let histories = this.state.histories || {}
+        histories[key] = histories[key]? false : true
+        this.setState({histories})
+    }
     addHistory(e) {
         e.preventDefault()
         this.setState({load: true})
@@ -42,7 +48,6 @@ export default class Historias extends Component {
         this.setState({conditions})
     }
     addCondition(len){
-        
         let {conditions, condition} = this.state
         if (condition !== ''){
             conditions[len] = condition
@@ -53,6 +58,20 @@ export default class Historias extends Component {
         const {value} = e.target
         this.setState({condition: value})
     }
+
+    createSprint(){
+        var key = ref_s.push().key;
+        ref_s.child('key').set({
+            histories: this.state.histories || null
+        }).then(()=> {
+            Object.keys(this.state.histories).map(i => {
+                firebase.database().ref(`functionalities/${this.props.proyect}/${i}`).update({
+                    state: key 
+                })
+            })
+        })
+        
+    }
     render() {
         let {conditions} = this.state
         conditions = Object.keys(conditions).map(i => conditions[i])
@@ -60,92 +79,105 @@ export default class Historias extends Component {
         
         //histories = Object.keys(histories).map(i=>histories[i])       
         return (
-            <Table color='teal' celled padded sortable>
+            <Table color='teal' sortable celled fixed>
                 <Table.Header>
                     <Table.Row>
-                        <Table.HeaderCell singleLine>
+                        <Table.HeaderCell width='1'>
+
+                        </Table.HeaderCell>
+                        <Table.HeaderCell width='1'>
                             Numero
                         </Table.HeaderCell>
                         <Table.HeaderCell 
                             sorted={column === 'quiero' ? direction : null}
-                            onClick={this.props.handleSort('quiero')}>
+                            onClick={this.props.handleSort('quiero')}
+                            width='8'>
                             Historia
                         </Table.HeaderCell>
                         <Table.HeaderCell 
                             sorted={column === 'state' ? direction : null}
-                            onClick={this.props.handleSort('state')}>
+                            onClick={this.props.handleSort('state')}
+                            width='2'>
                             Estado
                         </Table.HeaderCell>
                         <Table.HeaderCell 
                             sorted={column === 'priority' ? direction : null}
-                            onClick={this.props.handleSort('priority')}>
+                            onClick={this.props.handleSort('priority')}
+                            width='2'>
                             Prioridad
+                        </Table.HeaderCell>
+                        <Table.HeaderCell 
+                            sorted={column === 'time' ? direction : null}
+                            onClick={this.props.handleSort('time')}
+                            width='2'>
+                            Tiempo promedio
                         </Table.HeaderCell>
                     </Table.Row>
                 </Table.Header>
                 <Table.Body>
-                    {_.map(data, ({ key, quiero, state, priority}, k) => (
-                        <Table.Row key={key}>
-                            <Table.Cell>
-                                {k+1}
-                            </Table.Cell>
-                            <Table.Cell singleLine>
-                                {quiero}
-                            </Table.Cell>
-                            <Table.Cell>
-                                {state}
-                            </Table.Cell>
-                            <Table.Cell negative={priority>=6} positive={priority<6}>
-                                {priority}
-                            </Table.Cell>
-                        </Table.Row>
-                    ))}
+                    {_.map(data, ({ key, content, state, priority, time, users, aprobado}, k) => {
+                        if (!this.props.user) {
+                            return (
+                                <Table.Row key={key}  positive={aprobado}>
+                                    <Table.Cell>
+                                        <Checkbox slider disabled={!aprobado} onChange={this.addState.bind(this, key)}/>
+                                    </Table.Cell>
+                                    <Table.Cell>
+                                        {k+1}
+                                    </Table.Cell>
+                                    <Table.Cell singleLine>
+                                        {content}
+                                    </Table.Cell>
+                                    <Table.Cell>
+                                        {state? 'En sprint': 'Sin sprint'}
+                                    </Table.Cell>
+                                    <Table.Cell>
+                                        {priority? priority>7? `Alta(${priority})`: priority>4? `Media(${priority})`: `Baja(${priority})`: 'No definido'}
+                                    </Table.Cell>
+                                    <Table.Cell>
+                                        {time}
+                                    </Table.Cell>
+                                </Table.Row>
+                            )
+                        }
+                        else {
+                            if(users !== undefined){
+                                if(users[this.props.user]){
+                                    return (
+                                        <Table.Row key={key} positive={state}>
+                                            <Table.Cell>
+                                                <Checkbox slider disabled={state} onChange={this.addState.bind(this, key)}/>
+                                            </Table.Cell>
+                                            <Table.Cell>
+                                                {k+1}
+                                            </Table.Cell>
+                                            <Table.Cell singleLine>
+                                                {content}
+                                            </Table.Cell>
+                                            <Table.Cell>
+                                                {state? 'En sprint': 'Sin sprint'}
+                                            </Table.Cell>
+                                            <Table.Cell>
+                                                {priority? priority>7? `Alta(${priority})`: priority>4? `Media(${priority})`: `Baja(${priority})`: 'No definido'}
+                                            </Table.Cell>
+                                            <Table.Cell>
+                                                {time}
+                                            </Table.Cell>
+                                        </Table.Row>
+                                    )
+                                }
+                            }
+                        }
+                    })}
                 </Table.Body>
-                <Table.Footer>
+                <Table.Footer fullWidth>
                     <Table.Row>
-                        <Table.HeaderCell colSpan='4'>
-                            <Button onClick={this.open} floated='right' icon labelPosition='left' primary size='small'>
-                                <Icon name='user'/> Agregar historia
-                            </Button>
-                            <Modal size='tiny' dimmer='blurring' open={this.state.open} onClose={this.open}>
-                                <Dimmer active={this.state.load}>
-                                    <Loader/>
-                                </Dimmer>
-                                <Modal.Header>Nueva historia de usuario</Modal.Header>
-                                <Modal.Content as={Form} onSubmit={this.addHistory.bind(this)}>
-                                    <Form.Group>
-                                        <Form.TextArea autoHeight  width={12} rows={1} name='como' label='Como' placeholder='Yo como...' />
-                                        <Form.Input type='number' min='1' max='10' fluid width={4} name='priority' label='Prioridad' placeholder='Prioridad' />
-                                    </Form.Group>
-                                    <Form.TextArea autoHeight rows={1} name='quiero' label='Quiero' placeholder='Quiero...' />
-                                    <Form.TextArea autoHeight rows={1} name='para' label='Para' placeholder='Para...' />
-                                    <Header as='h4' content='Condiciones'/>
-                                    {conditions.length > 0 && 
-                                        <Grid columns='equal'>
-                                            {conditions.map((condition, k) => (
-                                                <Grid.Row key={k}>
-                                                    <Grid.Column width={4}>
-                                                        <Segment>
-                                                            Condicion {k+1}
-                                                        </Segment> 
-                                                    </Grid.Column>
-                                                    <Grid.Column width={12}>
-                                                        <TextArea autoHeight rows={1} className='unborder-condition' key={k} value={condition} name={k} onChange={this.uploadCondition.bind(this)}/>
-                                                    </Grid.Column>
-                                                </Grid.Row>
-                                            ))}
-                                        </Grid>
-                                    }
-                                    <Form.Group>
-                                        <Form.TextArea autoHeight rows={1} value={this.state.condition} onChange={this.condition.bind(this)} width={14}/>
-                                        <Label onClick={this.addCondition.bind(this, conditions.length)} color='teal'>
-                                            Agregar
-                                        </Label>
-                                    </Form.Group>
-                                    <Button negative onClick={this.open}>Cancelar</Button>
-                                    <Button primary type='submit'>Agregar</Button>
-                                </Modal.Content>
-                            </Modal>
+                        <Table.HeaderCell />
+                        <Table.HeaderCell colSpan='5'>
+                        <Button size='small' onClick={this.createSprint.bind(this)}>Approve</Button>
+                        <Button disabled size='small'>
+                            Approve All
+                        </Button>
                         </Table.HeaderCell>
                     </Table.Row>
                 </Table.Footer>
